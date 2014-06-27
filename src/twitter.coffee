@@ -16,9 +16,6 @@ class Twitter extends Adapter
       limitReached = true
       @bot.send(user.user.user, strings[0], user.user.status_id )
 
-    if limitReached
-      console.log 'limit reached'
-
   reply: (user, strings...) ->
     console.log "Replying"
     strings.forEach (text) =>
