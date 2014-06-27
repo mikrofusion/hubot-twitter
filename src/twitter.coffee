@@ -52,6 +52,7 @@ class Twitter extends Adapter
       msg = msg.replace(/@[(a-zA-Z0-9_)]+/g, '')              # remove any @references
       msg = msg.replace(/\s+/g,' ')                           # shorten whitespace to single character
       msg = msg.replace(/^\s+|\s+$/g,'')                      # trim
+      msg = msg.replace(/die/g,'')                            # prevent die command
 
       msg = "@#{self.robot.name} #{msg}"
 
