@@ -8,12 +8,10 @@ oauth        = require('oauth')
 class Twitter extends Adapter
 
   send: (user, strings...) ->
-    console.log "Sending strings to user: " + user.screen_name
+    console.log "Sending strings to user: " + user.user.user
     strings.forEach (str) =>
-      text = str
-      tweetsText = str.split('\n')
-      tweetsText.forEach (tweetText) =>
-        @bot.send(user.user.user, tweetText, user.user.status_id )
+      # prevent spamming by limiting to 1 response
+      @bot.send(user.user.user, str, user.user.status_id )
 
   reply: (user, strings...) ->
     console.log "Replying"
@@ -40,8 +38,24 @@ class Twitter extends Adapter
       reg = new RegExp('@'+self.robot.name,'i')
       console.log "received #{data.text} from #{data.user.screen_name}"
 
-      msg = data.text.replace reg, self.robot.name
-      tmsg = new TextMessage({ user: data.user.screen_name, status_id: data.id_str }, msg)
+      reg = new RegExp('@'+self.robot.name,'i')
+      msg = data.text.replace reg, ''                         #remove robot name
+
+      respondTo = msg.match(/@[a-zA-Z0-9_]+/g)
+      respondTo = [] if !respondTo?
+
+      respondTo.unshift "@#{data.user.screen_name}"           # add sender name
+
+      msg = msg.replace(/@[(a-zA-Z0-9_)]+/g, '')              # remove any @references
+      msg = msg.replace(/\s+/g,' ')                           # shorten whitespace to single character
+      msg = msg.replace(/^\s+|\s+$/g,'')                      # trim
+
+      msg = "@#{self.robot.name} #{msg}"
+
+      console.log 'responding to'
+      console.log respondTo
+
+      tmsg = new TextMessage({ user: respondTo.join(' '), status_id: data.id_str }, msg)
       self.receive tmsg
       if err
         console.log "received error: #{err}"
@@ -78,7 +92,10 @@ class TwitterStreaming extends EventEmitter
 
   send : (user, tweetText, in_reply_to_status_id) ->
     console.log "send twitt to #{user} with text #{tweetText}"
-    @consumer.post "https://api.twitter.com/1.1/statuses/update.json", @token, @tokensecret, { status: "@#{user} #{tweetText}", in_reply_to_status_id: in_reply_to_status_id },'UTF-8',  (error, data, response) ->
+    tweet = "#{user} #{tweetText}"
+    tweet = tweet.slice(0, Math.min(tweet.length, 135))
+    tweet = "#{tweet} ..."
+    @consumer.post "https://api.twitter.com/1.1/statuses/update.json", @token, @tokensecret, { status: tweet, in_reply_to_status_id: in_reply_to_status_id },'UTF-8',  (error, data, response) ->
       if error
         console.log "twitter send error: #{error} #{data}"
       console.log "Status #{response.statusCode}"
