@@ -25,14 +25,6 @@ class Twitter extends Adapter
     console.log "Command" + command
     @bot.send command, strings...
 
-
-  removeDuplicates: (ar) ->
-    if ar.length == 0
-      return []
-    res = {}
-    res[ar[key]] = ar[key] for key in [0..ar.length-1]
-    value for key, value of res
-
   run: ->
     self = @
 
@@ -52,28 +44,29 @@ class Twitter extends Adapter
       reg = new RegExp('@'+self.robot.name,'i')
       msg = data.text.replace reg, ''                         #remove robot name
 
-      respondTo = msg.match(/@[a-zA-Z0-9_]+/g)
-      respondTo = [] if !respondTo?
+      if msg.indexOf("RT") == 0
+        console.log 'retweet!!!!'
+      else
+        respondTo = msg.match(/@[a-zA-Z0-9_]+/g)
+        respondTo = [] if !respondTo?
 
-      respondTo.unshift "@#{data.user.screen_name}"           # add sender name
+        respondTo.unshift "@#{data.user.screen_name}"           # add sender name
 
-      msg = msg.replace(/@[(a-zA-Z0-9_)]+/g, '')              # remove any @references
-      msg = msg.replace(/\s+/g,' ')                           # shorten whitespace to single character
-      msg = msg.replace(/^\s+|\s+$/g,'')                      # trim
-      msg = msg.replace(/die/g,'')                            # prevent die command
+        msg = msg.replace(/@[(a-zA-Z0-9_)]+/g, '')              # remove any @references
+        msg = msg.replace(/\s+/g,' ')                           # shorten whitespace to single character
+        msg = msg.replace(/^\s+|\s+$/g,'')                      # trim
+        msg = msg.replace(/die/g,'')                            # prevent die command
 
-      msg = "@#{self.robot.name} #{msg}"
+        msg = "@#{self.robot.name} #{msg}"
 
-      respondTo = self.removeDuplicates(respondTo)
+        console.log 'responding to'
+        console.log respondTo
 
-      console.log 'responding to'
-      console.log respondTo
-
-      limitReached = false
-      tmsg = new TextMessage({ user: respondTo.join(' '), status_id: data.id_str }, msg)
-      self.receive tmsg
-      if err
-        console.log "received error: #{err}"
+        limitReached = false
+        tmsg = new TextMessage({ user: respondTo.join(' '), status_id: data.id_str }, msg)
+        self.receive tmsg
+        if err
+          console.log "received error: #{err}"
 
     @bot = bot
 
