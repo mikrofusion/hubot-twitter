@@ -9,9 +9,9 @@ class Twitter extends Adapter
 
   send: (user, strings...) ->
     console.log "Sending strings to user: " + user.user.user
-    strings.forEach (str) =>
-      # prevent spamming by limiting to 1 response
-      @bot.send(user.user.user, str, user.user.status_id )
+    # prevent spamming by limiting to 1 response
+    if strings.length > 0
+      @bot.send(user.user.user, strings[0], user.user.status_id )
 
   reply: (user, strings...) ->
     console.log "Replying"
