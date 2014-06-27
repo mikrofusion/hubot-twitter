@@ -7,10 +7,13 @@ oauth        = require('oauth')
 
 class Twitter extends Adapter
 
+  @limitReached = false
   send: (user, strings...) ->
+
     console.log "Sending strings to user: " + user.user.user
     # prevent spamming by limiting to 1 response
-    if strings.length > 0
+    if strings.length > 0 && !@limitReached
+      @limitReached = true
       @bot.send(user.user.user, strings[0], user.user.status_id )
 
   reply: (user, strings...) ->
@@ -55,6 +58,7 @@ class Twitter extends Adapter
       console.log 'responding to'
       console.log respondTo
 
+      @limitReached = false
       tmsg = new TextMessage({ user: respondTo.join(' '), status_id: data.id_str }, msg)
       self.receive tmsg
       if err
