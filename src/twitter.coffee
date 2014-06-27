@@ -44,6 +44,9 @@ class Twitter extends Adapter
       reg = new RegExp('@'+self.robot.name,'i')
       msg = data.text.replace reg, ''                         #remove robot name
 
+      if msg.indexOf(".") == 0
+        msg = msg.slice(1, msg.length)
+
       if msg.indexOf("RT") == 0
         console.log 'retweet!!!!'
       else
