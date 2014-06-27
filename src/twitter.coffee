@@ -28,6 +28,14 @@ class Twitter extends Adapter
     console.log "Command" + command
     @bot.send command, strings...
 
+
+  removeDuplicates: (ar) ->
+    if ar.length == 0
+      return []
+    res = {}
+    res[ar[key]] = ar[key] for key in [0..ar.length-1]
+    value for key, value of res
+
   run: ->
     self = @
 
@@ -58,6 +66,8 @@ class Twitter extends Adapter
       msg = msg.replace(/die/g,'')                            # prevent die command
 
       msg = "@#{self.robot.name} #{msg}"
+
+      respondTo = self.removeDuplicates(respondTo)
 
       console.log 'responding to'
       console.log respondTo
